@@ -48,7 +48,7 @@
 	var walkSpeed = 0;
 	var turnSpeed = 0;
 
-	var heightMultiplier = getHeightMultiplier();
+	var heightMultiplier = setHeightMultiplier();
 
 	//texture returned by globeCam
 	var globeCamTexture = new THREE.WebGLRenderTarget( terrainDetail+1, terrainDetail+1, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
@@ -56,12 +56,7 @@
 
 	//the terrain plane
 	var terrainGeo = new THREE.PlaneGeometry(terrainScale, terrainScale, terrainDetail, terrainDetail);
-	var terrainMat = new THREE.MeshStandardMaterial({
-		roughness: 1,
-		metalness: 0,
-		color: new THREE.Color(0.43,0.41,0.4)
-	});
-	var terrainMat2 = new THREE.ShaderMaterial({
+	var terrainMat = new THREE.ShaderMaterial({
 		uniforms: {
 			heightMultiplier: { value: heightMultiplier },
 			terrainDirection: {value: new THREE.Vector3()},
@@ -71,7 +66,7 @@
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
 	});
-	var terrainMesh = new THREE.Mesh(terrainGeo, terrainMat2);
+	var terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
 
 	//other terrain scene elements
 	var terrainPivot = new THREE.Object3D();
@@ -94,26 +89,20 @@
 	Promise.all([loadPlanet(), loadSkyboxTexture(), loadTerrainTexture()]).then(function(){
 		//renderer setup
 		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.shadowMap.enabled = true;
 		document.body.appendChild(renderer.domElement);
 
 		//terrain scene setup
-		terrainMesh.castShadow = true;
-		terrainMesh.receiveShadow = true;
+		//addTerrainShadowsAndFog();
 		terrainMesh.rotation.x = -Math.PI/2;
 		terrainMesh.rotation.z = -Math.PI/2;
 
-		dirLight.castShadow = true;
-		dirLight.shadow.mapSize = new THREE.Vector2(2048,2048);
 		dirLight.position.set(0,terrainScale/8, terrainScale/2);
 		dirLightPivot.add(dirLight);
 
 		terrainPivot.add(terrainMesh, terrainSkybox, dirLightPivot, ambLight);
 		terrainScene.add(terrainPivot);
-		//terrainScene.fog = terrainFog;
+
 		terrainMesh.add(terrainVehicle);
-		terrainVehicle.castShadow = true;
-		terrainVehicle.receiveShadow = true;
 		terrainVehicle.add(terrainCamera);
 		terrainCamera.position.set(-2,0,0);
 		terrainCamera.up.set(0,0,1);
@@ -169,16 +158,16 @@
 			new Promise(function(res){
 				texLoad.load('img/highlands.png', function(tex){
 					tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-					terrainMat2.uniforms.terrainmap2.value = tex;
-					terrainMat2.needsUpdate = true;
+					terrainMat.uniforms.terrainmap2.value = tex;
+					terrainMat.needsUpdate = true;
 					res();
 				});
 			}),
 			new Promise(function(res){
 				texLoad.load('img/basalt.png', function(tex){
 					tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-					terrainMat2.uniforms.terrainmap1.value = tex;
-					terrainMat2.needsUpdate = true;
+					terrainMat.uniforms.terrainmap1.value = tex;
+					terrainMat.needsUpdate = true;
 					res();
 				});
 			})
@@ -228,7 +217,18 @@
 		}
 	}
 
-	function getHeightMultiplier(){
+	function addTerrainShadowsAndFog(){
+		renderer.shadowMap.enabled = true;
+		terrainMesh.castShadow = true;
+		terrainMesh.receiveShadow = true;
+		terrainScene.fog = terrainFog;
+		dirLight.castShadow = true;
+		dirLight.shadow.mapSize = new THREE.Vector2(2048,2048);
+		terrainVehicle.castShadow = true;
+		terrainVehicle.receiveShadow = true;
+	}
+
+	function setHeightMultiplier(){
 		var distToSurf = venusRadius * (globeCamAltitude - 1);
 		var terrainWidth = Math.tan(globeCamFov*degToRad)*distToSurf*2;
 		return venusTerrainDiff * terrainScale / terrainWidth;
@@ -247,7 +247,7 @@
 
 	function updateTerrainTexture(){
 		var terrDirection = dirLightPivot.rotation.y;
-		terrainMat2.uniforms.terrainDirection.value = terrDirection;
+		terrainMat.uniforms.terrainDirection.value = terrDirection;
 	}
 
 	function moveWithKeys(){
