@@ -66,8 +66,7 @@
 			heightMultiplier: { value: heightMultiplier },
 			terrainDirection: {value: new THREE.Vector3()},
 			terrainmap1: { value: new THREE.Texture()},
-			terrainmap2: { value: new THREE.Texture()},
-			walkSpeed: { value: walkSpeed }
+			terrainmap2: { value: new THREE.Texture()}
 		},
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
@@ -92,7 +91,7 @@
 	var mousePosition = new THREE.Vector2(0,0);
 	var keys = {};
 
-	Promise.all([loadPlanet(), loadSkyboxTexture2(), loadTerrainTexture()]).then(function(){
+	Promise.all([loadPlanet(), loadSkyboxTexture(), loadTerrainTexture()]).then(function(){
 		//renderer setup
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.shadowMap.enabled = true;
@@ -155,7 +154,7 @@
 		});
 	}
 
-	function loadSkyboxTexture2(){
+	function loadSkyboxTexture(){
 		return new Promise(function(res){
 			texLoad.load('img/sky.png', function(tex){
 				terrainSkyboxMat.map = tex;
@@ -203,9 +202,6 @@
 		renderer.setScissor(0,0,renderer.domElement.width,renderer.domElement.height);
 		renderer.setScissorTest(true);
 		renderer.render(terrainScene, terrainCamera);
-		if(keys[16]){
-			renderMinimaps();
-		}
 	}
 
 	function renderMinimaps(){
@@ -227,6 +223,9 @@
 		moveWithKeys();
 		renderGlobe();
 		renderTerrain();
+		if(keys[16]){
+			renderMinimaps();
+		}
 	}
 
 	function getHeightMultiplier(){
@@ -243,13 +242,12 @@
 		var vx = Math.round(terrainDetail * (pt.x/terrainScale + 0.5));
 		var vy = Math.round(terrainDetail * (pt.y/terrainScale + 0.5));
 		var pixel = heightMultiplier * (globeCamTextureData[(vy * globeCamTexture.width * 4) + (vx * 4)] - 128)/255;
-		return pixel * 2;
+		return pixel * 2; //scaled by 2
 	}
 
 	function updateTerrainTexture(){
 		var terrDirection = dirLightPivot.rotation.y;
 		terrainMat2.uniforms.terrainDirection.value = terrDirection;
-		terrainMat2.uniforms.walkSpeed.value = walkSpeed;
 	}
 
 	function moveWithKeys(){
