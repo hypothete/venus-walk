@@ -1,4 +1,4 @@
-(function(THREE){
+(function(THREE, Promise, console){
 	'use strict';
 
 	var renderer = new THREE.WebGLRenderer();
@@ -42,8 +42,6 @@
 	var terrainVehicleMat = new THREE.MeshStandardMaterial({color:0x999999, roughness:0.5,metalness:0});
 	var terrainVehicleGeo = new THREE.BoxGeometry(0.1,0.1,0.05);
 	var terrainVehicle = new THREE.Mesh(terrainVehicleGeo, terrainVehicleMat);
-	//var terrainVehicleRaycaster = new THREE.Raycaster();
-	//var normalArrow = new THREE.ArrowHelper(new THREE.Vector3(), new THREE.Vector3(), 0.5, 0x00ff00, 0.2, 0.2);
 
 	var maxWalkSpeed = 0.0001;
 	var maxTurnSpeed = 0.1;
@@ -72,7 +70,7 @@
 			walkSpeed: { value: walkSpeed }
 		},
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentShader2' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
 	});
 	var terrainMesh = new THREE.Mesh(terrainGeo, terrainMat2);
 
@@ -80,7 +78,6 @@
 	var terrainPivot = new THREE.Object3D();
 	var dirLightPivot = new THREE.Object3D();
 	var dirLight = new THREE.DirectionalLight(new THREE.Color(1,0.95,0.5), 0.2);
-	//var dirLightIndicator = new THREE.DirectionalLightHelper(dirLight,1);
 	var ambLight = new THREE.AmbientLight(new THREE.Color(0.6,0.57,0.33));
 	var terrainFog = new THREE.Fog( 0xc8ac03, terrainScale/8, terrainScale/2);
 
@@ -122,8 +119,6 @@
 		terrainCamera.position.set(-2,0,0);
 		terrainCamera.up.set(0,0,1);
 		terrainCamera.lookAt(new THREE.Vector3(0,0,0));
-
-		//terrainVehicleRaycaster.set(new THREE.Vector3(0,0,10), new THREE.Vector3(0,0,-1));
 
 		//globe scene setup
 		globeScene.add(globeMesh, globeCameraPivot, globeCam2Lon);
@@ -198,26 +193,15 @@
 			vert.z = getHeightQuick(vert);
 		});
 		terrainMesh.geometry.verticesNeedUpdate = true;
-		//terrainMesh.geometry.computeFaceNormals();
 		terrainMesh.geometry.computeVertexNormals();
 		terrainMesh.geometry.normalsNeedUpdate = true;
 	}
 
 	function renderTerrain(){
 		terrainVehicle.position.z = getHeightQuick(terrainVehicle.position)+0.025;
-		
-		// if(terrainCamera.position.y < terrainVehicle.position.z){
-		// 	terrainCamera.position.y = terrainVehicle.position.z;
-		// }
-		// var groundIntersect = terrainVehicleRaycaster.intersectObject(terrainMesh);
-		// if(groundIntersect.length){
-		// 	normalArrow.setDirection(groundIntersect[0].face.normal);
-		// }
-
 		renderer.setViewport(0,0,renderer.domElement.width,renderer.domElement.height);
 		renderer.setScissor(0,0,renderer.domElement.width,renderer.domElement.height);
 		renderer.setScissorTest(true);
-		//renderer.setClearColor ( 0x000000, 255 );
 		renderer.render(terrainScene, terrainCamera);
 		if(keys[16]){
 			renderMinimaps();
@@ -225,8 +209,6 @@
 	}
 
 	function renderMinimaps(){
-		//renderer.setClearColor ( 0x000000, 0 );
-
 		//planet minimap
 		renderer.setViewport(0,0,window.innerWidth/4,window.innerWidth/4);
 		renderer.setScissor(0,0,window.innerWidth/4,window.innerWidth/4);
@@ -314,7 +296,6 @@
 		globeCameraPivot.rotateOnAxis(centerToCam, turnSpeed);
 		dirLightPivot.rotation.y -= turnSpeed;
 		updateTerrainTexture();
-		//dirLightIndicator.update();
 	}
 
 	document.addEventListener('keydown', function(e){
@@ -335,12 +316,10 @@
 				terrainPivot.rotation.x += dx;
 				terrainPivot.rotation.y += dy;
 				globeCameraPivot.rotateOnAxis(centerToCam, dy);
-				//terrainCamera.rotateOnAxis(new THREE.Vector3(1,0,0),dx);
 				terrainCamera.position.z += dx;
 				terrainCamera.lookAt(new THREE.Vector3(0,0,0));
 				dirLightPivot.rotation.y -= dy;
 				updateTerrainTexture();
-				//dirLightIndicator.update();
 			}
 		}
 
@@ -358,13 +337,11 @@
 
 	document.addEventListener('keyup', function(e){
 		keys[e.keyCode] = false;
-
 	});
 
 	window.addEventListener('resize', function(){
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		terrainCamera.updateProjectionMatrix();
+	});
 
-	})
-
-})(window.THREE);
+})(window.THREE, window.Promise, window.console);
