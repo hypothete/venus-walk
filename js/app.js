@@ -201,8 +201,8 @@
 		renderer.render(globeScene, globeCam2);
 
 		// //texture being rendered to terrain height
-		renderer.setViewport(0,384,256,256);
-		renderer.setScissor(0,384,256,256);
+		renderer.setViewport(0,window.innerWidth/4,window.innerWidth/8,window.innerWidth/8);
+		renderer.setScissor(0,window.innerWidth/4,window.innerWidth/8,window.innerWidth/8);
 		renderer.setScissorTest(true);
 		renderer.render(globeScene, globeCamera);
 	}
@@ -264,7 +264,7 @@
 				walkSpeed = -maxWalkSpeed;
 			}
 		}
-		else if(!keys[87] && !keys[83]){
+		else {
 			walkSpeed *= 0.9;
 			if(Math.abs(walkSpeed) < 0.00001){
 				walkSpeed = 0;
