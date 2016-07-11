@@ -7,20 +7,18 @@
 	var globeScene = new THREE.Scene();
 
 	var venusRadius = 6051.8;
-	var venusTerrainDiff = 13.7; //distance between highest and lowest point
+	var venusTerrainDiff = 13.7; //distance between highest and lowest point in km
 	var degToRad = Math.PI/180;
 
 	//the orbiting camera over the globe
-	var globeCamAltitude = 1.02; // in vRadii
+	var globeCamAltitude = 1.02; // in Venus radii
 	var globeCamFov = 30;
 	var globeCameraPivot = new THREE.Object3D();
 	var globeCamera = new THREE.PerspectiveCamera(globeCamFov, 1, 0.01, globeCamAltitude);
 
 	//direction indicator on minimap
-	var camFwd = new THREE.Object3D();
-	var camRight = new THREE.Object3D();
-	var centerToCam = new THREE.Vector3();
-	var centerToAxis = new THREE.Vector3();
+	var centerToCam = new THREE.Vector3(0, 0, -1);
+	var centerToAxis = new THREE.Vector3(0,1,0);
 	var camAxis = new THREE.AxisHelper(0.2);
 
 	//provides the minimap view
@@ -30,13 +28,12 @@
 
 	//the grayscale globe
 	var globeGeo = new THREE.SphereGeometry(1,32,32);
-	var globeMat = new THREE.MeshBasicMaterial({
-	});
+	var globeMat = new THREE.MeshBasicMaterial();
 	var globeMesh = new THREE.Mesh(globeGeo, globeMat);
 
 	//camera for viewing the plane
 	var terrainCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 100 );
-	var terrainDetail = 128; //number of vertices/pixels sampled
+	var terrainDetail = 128; //number of pixels sampled per side
 	var terrainScale = 40; //size of the plane for terrain viz
 
 	var terrainVehicleMat = new THREE.MeshStandardMaterial({color:0x999999, roughness:0.5,metalness:0});
@@ -113,24 +110,15 @@
 		globeCam2Lon.add(globeCam2Lat);
 		globeCam2Lat.add(globeCam2);
 
-		globeCameraPivot.add(globeCamera, camRight);
+		globeCameraPivot.add(globeCamera);
 		globeCamera.position.set(0,0,-globeCamAltitude);
 		globeCamera.lookAt(globeMesh.position);
 		globeCamera.add(camAxis);
 
-		camFwd.position.set(-1,0,0); //forward rotation point on the pivot
-		camRight.position.set(0,1,0); //right rotation point on the pivot
-
-		globeCamera.updateMatrixWorld();
-		centerToCam.setFromMatrixPosition( globeCamera.matrixWorld ).normalize();
-
-		camRight.updateMatrixWorld();
-		centerToAxis.setFromMatrixPosition( camRight.matrixWorld ).normalize();
-
 		globeCam2.position.set(0.1,0,-2);
 		globeCam2.lookAt(globeMesh.position);
 
-		renderAll(0);
+		renderAll();
 	});
 
 	function loadPlanet(){

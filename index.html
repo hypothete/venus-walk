@@ -36,7 +36,7 @@
 
 		void main( void ) {
 			mat2 rotation = mat2(cos(terrainDirection), sin(terrainDirection),-sin(terrainDirection), cos(terrainDirection));
-			vec2 rUv = vposition.xy*rotation;
+			vec2 rUv = (vposition.xy)*rotation;
 			vec4 hills = texture2D(terrainmap1, rUv);
 			vec4 highlands = texture2D(terrainmap2, rUv);
 			float heightRatio = vposition.z/heightMultiplier;
